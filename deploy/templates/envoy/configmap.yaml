@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envoy-config
+  labels:
+    app: {{ .Values.envoy.service.name }}
+data:
+  envoy.yaml: |-
+    static_resources:
+      listeners:
+        - name: listener_0
+          address:
+            socket_address:
+              address: 0.0.0.0
+              port_value: {{ .Values.envoy.service.port }}
+          filter_chains:
+            - filters:
+                - name: envoy.filters.network.http_connection_manager
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                    stat_prefix: ingress_http
+                    access_log:
+                      - name: envoy.access_loggers.stdout
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+                          log_format:
+                            text_format_source:
+                              inline_string: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% \"%REQ(AUTHORIZATION)%\" \"%UPSTREAM_CLUSTER%\"\n"
+                    route_config:
+                      name: local_route
+                      virtual_hosts:
+                        - name: local_service
+                          domains: ["*"]
+                          routes:
+                            - match:
+                                prefix: "/login"
+                              route:
+                                cluster: auth_http
+                              typed_per_filter_config:
+                                envoy.filters.http.ext_authz:
+                                  "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                  disabled: true
+                            - match:
+                                prefix: "/public"
+                              route:
+                                cluster: backend_service
+                              typed_per_filter_config:
+                                envoy.filters.http.ext_authz:
+                                  "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                                  disabled: true
+                            - match:
+                                prefix: "/private"
+                              route:
+                                cluster: backend_service
+                    http_filters:
+                      - name: envoy.filters.http.health_check
+                        typed_config:
+                          '@type': type.googleapis.com/envoy.extensions.filters.http.health_check.v3.HealthCheck
+                          pass_through_mode: false
+                          headers:
+                            - name: ":path"
+                              safe_regex_match:
+                                google_re2: {}
+                                regex: "^/healthcheck"
+                      - name: envoy.filters.http.ext_authz
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                          grpc_service:
+                            envoy_grpc:
+                              cluster_name: auth_ext
+                            timeout: 5s
+                      - name: envoy.filters.http.router
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+      clusters:
+{{ include "envoy.clusterEndpoint" (dict "name" "auth_http" "address" .Values.envoy.config.auth_service "port" 8080) | indent 8 }}
+{{ include "envoy.clusterEndpoint" (dict "name" "auth_ext" "address" .Values.envoy.config.auth_service "port" 9191 "protocol" "http2") | indent 8 }}
+{{ include "envoy.clusterEndpoint" (dict "name" "backend_service" "address" .Values.envoy.config.backend_service "port" 8070) | indent 8 }}
+    admin:
+      access_log_path: /tmp/admin_access.log
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9901

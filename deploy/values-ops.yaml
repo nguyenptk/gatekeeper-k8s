@@ -1,0 +1,18 @@
+auth:
+  service:
+    name: ops-auth-service
+    port: 8080
+    grpcPort: 9191
+
+backend:
+  service:
+    name: ops-backend-service
+    port: 8070
+
+envoy:
+  service:
+    name: ops-envoy
+    port: 8060
+  config:
+    auth_service: ops-auth-service
+    backend_service: ops-backend-service

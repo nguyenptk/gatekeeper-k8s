@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.auth.service.name }}
+  labels:
+    app: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag }}"
+          imagePullPolicy: {{ .Values.auth.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.auth.service.port }}
+            - containerPort: {{ .Values.auth.service.grpcPort }}
+          env:
+            - name: PORT
+              value: "{{ .Values.auth.service.port }}"
+            - name: GRPC_PORT
+              value: "{{ .Values.auth.service.grpcPort }}"
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: {{ .Values.auth.service.port }}
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: {{ .Values.auth.service.port }}
+            initialDelaySeconds: 1
+            periodSeconds: 5

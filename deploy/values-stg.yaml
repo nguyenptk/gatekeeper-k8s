@@ -1,0 +1,18 @@
+auth:
+  service:
+    name: stg-auth-service
+    port: 8080
+    grpcPort: 9191
+
+backend:
+  service:
+    name: stg-backend-service
+    port: 8070
+
+envoy:
+  service:
+    name: stg-envoy
+    port: 8060
+  config:
+    auth_service: stg-auth-service
+    backend_service: stg-backend-service
