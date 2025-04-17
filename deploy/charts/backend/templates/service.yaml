@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ .Values.service.name }}
 spec:
+  clusterIP: None # headless to help Envoy's strict_dns cluster sees all IPs
   selector:
     app: backend
   ports:

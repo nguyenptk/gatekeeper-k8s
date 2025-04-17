@@ -86,16 +86,7 @@ make helm-install-stg
 
 ---
 
-## 4. Upgrade Chart with New Changes
-
-```bash
-make helm-upgrade-ops
-make helm-upgrade-stg    
-```
-
----
-
-## 5. Test the Helm Template
+## 4. Test the Helm Template
 
 ```bash
 make helm-test-ops
@@ -104,7 +95,7 @@ make helm-test-stg
 
 ---
 
-## 6. Preview the Helm Template (Dry-run)
+## 5. Preview the Helm Template (Dry-run)
 
 ```bash
 make helm-template-ops
@@ -113,20 +104,20 @@ make helm-template-stg
 
 ---
 
-## 7. Run Tests
+## 6. Run Tests
 
-### 7.1. Normal Tests
+### 6.1. Test the system with `curl`
 
-After deployment, port-forward `ops-envoy`:
+After deployment, port-forward `ops-envoy` to the `nodePort` to load balance the request from the downstream to all `envoy` pods:
 
 ```bash
-k port-forward deployment/ops-envoy 8060:8060 -n ops
+kubectl port-forward deployment/ops-envoy 30080:8060 -n ops
 ```
 
 or port-forward `stg-envoy`:
 
 ```bash
-k port-forward deployment/stg-envoy 8060:8060 -n stg
+kubectl port-forward deployment/stg-envoy 30080:8060 -n stg
 ```
 
 Then run the test script:
@@ -140,18 +131,18 @@ This script:
 - calls `/login` endpoint to the auth service to fetch a JWT token
 - calls `/public` endpoint without token
 - calls `/private` endpoint without and with token
-- prints all results
+- prints results; Envoy will round‑robin across auth & backend pods.
 
 Further, we can collect the Envoy gateway's stats:
 
 ```bash
-k port-forward deployment/ops-envoy 9901:9901 -n ops
+kubectl port-forward deployment/ops-envoy 30901:9901 -n ops
 ```
 
 and call admin's endpoint:
 
 ```bash
-curl http://localhost:9901/stats
+curl http://localhost:30901/stats
 ```
 
 Here are some samples of the stats:
@@ -161,9 +152,9 @@ cluster.backend_service.upstream_rq_200: 10
 cluster.auth_ext.internal.upstream_rq_time: P0(nan,0) P25(nan,0) P50(nan,0) P75(nan,0) P90(nan,0) P95(nan,1.05) P99(nan,1.09) P99.5(nan,1.095) P99.9(nan,1.099) P100(nan,1.1)
 ```
 
-### 7.2. Smoke Tests
+### 6.2. Smoke Tests
 
-To quick “on/off” tests to verify each sub‑chart’s `enabled` flag works as expected.
+Quick “on/off” tests to verify each sub‑chart’s `enabled` flag works as expected.
 
 ```bash
 make helm-smoke-noauth
@@ -179,6 +170,15 @@ Clean up the smoke tests
 
 ```bash
 make cleanup-smoke
+```
+
+---
+
+## 7. Upgrade Chart with New Changes
+
+```bash
+make helm-upgrade-ops
+make helm-upgrade-stg    
 ```
 
 ---

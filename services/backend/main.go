@@ -13,6 +13,7 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func publicHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("=== Received public request ===")
 	appName := os.Getenv("APP_NAME")
 	if appName == "" {
 		appName = "my-gatekeeper-k8s"
@@ -22,6 +23,7 @@ func publicHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func privateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("=== Received private request ===")
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprint(w, "Welcome to my private property!")
 }
