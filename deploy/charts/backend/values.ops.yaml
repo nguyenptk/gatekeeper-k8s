@@ -1,3 +1,0 @@
-service:
-  name: ops-backend-service
-  port: 8070

@@ -1,0 +1,15 @@
+auth:
+  service:
+    name: ops-auth-service
+
+backend:
+  service:
+    name: ops-backend-service
+
+envoy:
+  service:
+    name: ops-envoy
+  config:
+    auth_service: ops-auth-service
+    backend_service: ops-backend-service
+  welcomeMessage: "Welcome to ops‑gatekeeper‑k8s environment!"

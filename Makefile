@@ -30,34 +30,22 @@ helm-deps:
 
 helm-install-ops: build-images load-images helm-deps
 	helm install $(RELEASE_NAME)-ops $(HELM_CHART) \
-	  -f $(HELM_CHART)/values.yaml \
-	  -f $(HELM_CHART)/charts/auth/values.ops.yaml \
-	  -f $(HELM_CHART)/charts/backend/values.ops.yaml \
-	  -f $(HELM_CHART)/charts/envoy/values.ops.yaml \
+	  -f $(HELM_CHART)/values.ops.yaml \
 	  --namespace $(NAMESPACE_OPS) --create-namespace
 
 helm-upgrade-ops: build-images load-images helm-deps
 	helm upgrade $(RELEASE_NAME)-ops $(HELM_CHART) \
-	  -f $(HELM_CHART)/values.yaml \
-	  -f $(HELM_CHART)/charts/auth/values.ops.yaml \
-	  -f $(HELM_CHART)/charts/backend/values.ops.yaml \
-	  -f $(HELM_CHART)/charts/envoy/values.ops.yaml \
+	  -f $(HELM_CHART)/values.ops.yaml \
 	  --namespace $(NAMESPACE_OPS)
 
 helm-install-stg: build-images load-images helm-deps
 	helm install $(RELEASE_NAME)-stg $(HELM_CHART) \
-	  -f $(HELM_CHART)/values.yaml \
-	  -f $(HELM_CHART)/charts/auth/values.stg.yaml \
-	  -f $(HELM_CHART)/charts/backend/values.stg.yaml \
-	  -f $(HELM_CHART)/charts/envoy/values.stg.yaml \
+	  -f $(HELM_CHART)/values.stg.yaml \
 	  --namespace $(NAMESPACE_STG) --create-namespace
 
 helm-upgrade-stg: build-images load-images helm-deps
 	helm upgrade $(RELEASE_NAME)-stg $(HELM_CHART) \
-	  -f $(HELM_CHART)/values.yaml \
-	  -f $(HELM_CHART)/charts/auth/values.stg.yaml \
-	  -f $(HELM_CHART)/charts/backend/values.stg.yaml \
-	  -f $(HELM_CHART)/charts/envoy/values.stg.yaml \
+	  -f $(HELM_CHART)/values.stg.yaml \
 	  --namespace $(NAMESPACE_STG)
 
 # Helm Uninstall
@@ -70,11 +58,11 @@ helm-uninstall:
 
 helm-template-ops:
 	helm template $(RELEASE_NAME)-ops $(HELM_CHART) \
-	  -f $(HELM_CHART)/values-ops.yaml
+	  -f $(HELM_CHART)/values.ops.yaml
 
 helm-template-stg:
 	helm template $(RELEASE_NAME)-stg $(HELM_CHART) \
-	  -f $(HELM_CHART)/values-stg.yaml
+	  -f $(HELM_CHART)/values.stg.yaml
 
 helm-rollback-ops:
 	helm rollback $(RELEASE_NAME)-ops

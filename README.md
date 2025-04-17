@@ -120,13 +120,13 @@ make helm-template-stg
 After deployment, port-forward `ops-envoy`:
 
 ```bash
-kubectl port-forward svc/envoy 8060:8060 -n ops
+k port-forward deployment/ops-envoy 8060:8060 -n ops
 ```
 
 or port-forward `stg-envoy`:
 
 ```bash
-kubectl port-forward svc/envoy 8060:8060 -n stg
+k port-forward deployment/stg-envoy 8060:8060 -n stg
 ```
 
 Then run the test script:
@@ -145,7 +145,7 @@ This script:
 Further, we can collect the Envoy gateway's stats:
 
 ```bash
-kubectl port-forward svc/envoy 9091:9091 -n ops
+k port-forward deployment/ops-envoy 9901:9901 -n ops
 ```
 
 and call admin's endpoint:
@@ -212,6 +212,6 @@ make helm-rollback-stg
 ## Notes
 
 - Envoy config is generated from a Helm `ConfigMap`
-- Auth and backend service names are dynamically set per environment via `values-stg.yaml` and `values-ops.yaml`
+- Auth and backend service names are dynamically set per environment via `values.stg.yaml` and `values.ops.yaml`
 
 ---

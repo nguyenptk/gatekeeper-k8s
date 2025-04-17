@@ -1,8 +1,35 @@
 auth:
   enabled: true
+  image:
+    repository: auth
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    name: auth-service
+    port: 8080
+    grpcPort: 9191
 
 backend:
   enabled: true
+  image:
+    repository: backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    name: backend-service
+    port: 8070
 
 envoy:
   enabled: true
+  image:
+    repository: envoy
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    name: envoy
+    port: 8060
+    adminPort: 9901
+  config:
+    auth_service: auth-service
+    backend_service: backend-service
+  welcomeMessage: "Welcome to gatekeeper-k8s!"

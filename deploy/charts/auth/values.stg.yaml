@@ -1,4 +1,0 @@
-service:
-  name: stg-auth-service
-  port: 8080
-  grpcPort: 9191

@@ -37,7 +37,7 @@ data:
                               direct_response:
                                 status: 200
                                 body:
-                                  inline_string: "Welcome to gatekeeper-k8s!"
+                                  inline_string: "{{ .Values.welcomeMessage }}"
                               typed_per_filter_config:
                                 envoy.filters.http.ext_authz:
                                   "@type": "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute"

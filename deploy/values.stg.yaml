@@ -1,0 +1,15 @@
+auth:
+  service:
+    name: stg-auth-service
+
+backend:
+  service:
+    name: stg-backend-service
+
+envoy:
+  service:
+    name: stg-envoy
+  config:
+    auth_service: stg-auth-service
+    backend_service: stg-backend-service
+  welcomeMessage: "Welcome to stg-gatekeeper-k8s environment!"

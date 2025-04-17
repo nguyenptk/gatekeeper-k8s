@@ -1,3 +1,0 @@
-service:
-  name: stg-backend-service
-  port: 8070
