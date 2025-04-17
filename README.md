@@ -1,44 +1,50 @@
-# 🛡️ gatekeeper-k8s
+# gatekeeper-k8s
 
-A modular Helm-powered Kubernetes stack, consisting of:
+A lightweight setup that uses **Envoy as a gateway** in front of two small Go services — one for login/auth (with gRPC for Envoy's external authorization) and one for a backend with public/private routes. Everything runs on Kubernetes using Helm.
 
-- **Envoy Gateway** – acting as an API gateway with routing, logging, and external authorization support.
-
-- **Auth Service (Go)** – provides JWT-based login via REST and authorization via gRPC for Envoy's ext_authz filter.
-
-- **Backend Service (Go)** – a protected microservice that sits behind Envoy and responds to public/private endpoints.
-
-The Helm chart supports environment-based overrides (e.g., ops, stg) and can dynamically configure service names, ports, and Envoy upstreams through templated values.
+This project started as a playground for testing service-to-service authentication, and route protection — and then grew into a reusable, multi-environment chart you can install with a single `make` command.
 
 ---
 
-## 📦 Structure
+## What’s in the box
+
+- **Envoy** – handles routing, logging, and calls the auth service for token validation (via gRPC)
+- **Auth (Go)** – REST endpoint for `/login`, gRPC endpoint for Envoy ext_authz, issues JWTs, and `/healthcheck` for probes
+- **Backend (Go)** – public `/public`, protected `/private`, and `/healthcheck` for probes
+- **Helm chart** – one chart for all services, with values for `ops` and `stg` environments
+- **Makefile** – to help typing Helm commands repeatedly
+
+## Structure
 
 ```
 .
-├── deploy/
-│   ├── templates/
-│   │   ├── auth/
-│   │   ├── backend/
-│   │   └── envoy/
-│   ├── _helpers.tpl
-│   ├── chart.yaml
-│   ├── values.yaml
-│   ├── values-stg.yaml
-│   └── values-ops.yaml
-├── scripts/
-|   ├── test.sh
-├── services/
-│   ├── auth/
-│   ├── backend/
-│   └── envoy/
+├── deploy
+│   ├── charts
+│   │   ├── auth
+│   │   ├── backend
+│   │   ├── envoy
+│   ├── Chart.lock
+│   ├── Chart.yaml
+│   └── values.yaml
+├── scripts
+│   └── test.sh
+├── services
+│   ├── auth
+│   │   ├── Dockerfile
+│   │   └── main.go
+│   ├── backend
+│   │   ├── Dockerfile
+│   │   └── main.go
+│   └── envoy
+│       ├── Dockerfile
+│       └── envoy.yaml
 ├── Makefile
 └── README.md
 ```
 
 ---
 
-## 🚀 1. Prerequisites
+## 1. Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Minikube](https://minikube.sigs.k8s.io/)
@@ -53,7 +59,7 @@ minikube start
 
 ---
 
-## 🛠️ 2. Build and Load Docker Images
+## 2. Build and Load Docker Images
 
 ```bash
 make build-images
@@ -64,7 +70,7 @@ This builds the `auth`, `backend`, and `envoy` images and loads them into Miniku
 
 ---
 
-## 📦 3. Install with Helm
+## 3. Install with Helm
 
 ### Ops environment:
 
@@ -80,7 +86,7 @@ make helm-install-stg
 
 ---
 
-## 🔁 4. Upgrade Chart with New Changes
+## 4. Upgrade Chart with New Changes
 
 ```bash
 make helm-upgrade-ops
@@ -89,32 +95,95 @@ make helm-upgrade-stg
 
 ---
 
-## 👀 5. Preview the Helm Template (Dry-run)
+## 5. Test the Helm Template
 
 ```bash
-make helm-template-stg
-make helm-template-ops
+make helm-test-ops
+make helm-test-stg
 ```
 
 ---
 
-## 🧪 6. Run Tests
+## 6. Preview the Helm Template (Dry-run)
 
 ```bash
-./test.sh
+make helm-template-ops
+make helm-template-stg
+```
+
+---
+
+## 7. Run Tests
+
+### 7.1. Normal Tests
+
+After deployment, port-forward `ops-envoy`:
+
+```bash
+kubectl port-forward svc/envoy 8060:8060 -n ops
+```
+
+or port-forward `stg-envoy`:
+
+```bash
+kubectl port-forward svc/envoy 8060:8060 -n stg
+```
+
+Then run the test script:
+
+```bash
+./scripts/test.sh
 ```
 
 This script:
-- Logs in to the auth service to fetch a JWT
-- Calls `/public` without token
-- Calls `/private` without and with token
-- Prints all results
+- calls `/` endpoint to get the landing page information
+- calls `/login` endpoint to the auth service to fetch a JWT token
+- calls `/public` endpoint without token
+- calls `/private` endpoint without and with token
+- prints all results
 
-Make sure `minikube service envoy --url` is accessible and exported as the base URL.
+Further, we can collect the Envoy gateway's stats:
+
+```bash
+kubectl port-forward svc/envoy 9091:9091 -n ops
+```
+
+and call admin's endpoint:
+
+```bash
+curl http://localhost:9901/stats
+```
+
+Here are some samples of the stats:
+```
+cluster.auth_http.upstream_rq_200: 5
+cluster.backend_service.upstream_rq_200: 10
+cluster.auth_ext.internal.upstream_rq_time: P0(nan,0) P25(nan,0) P50(nan,0) P75(nan,0) P90(nan,0) P95(nan,1.05) P99(nan,1.09) P99.5(nan,1.095) P99.9(nan,1.099) P100(nan,1.1)
+```
+
+### 7.2. Smoke Tests
+
+To quick “on/off” tests to verify each sub‑chart’s `enabled` flag works as expected.
+
+```bash
+make helm-smoke-noauth
+```
+
+Verify only backend service & envoy are running
+
+```bash
+kubectl get deployments -n smoke-test
+```
+
+Clean up the smoke tests
+
+```bash
+make cleanup-smoke
+```
 
 ---
 
-## 🧹 7. Cleanup Resources
+## 8. Cleanup Resources
 
 To uninstall Helm releases and delete Docker images from both local and Minikube:
 
@@ -129,7 +198,7 @@ This runs:
 
 ---
 
-## 🔄 8. Rollback (Optional)
+## 9. Rollback (Optional)
 
 Revert to a previous Helm release:
 
@@ -140,32 +209,9 @@ make helm-rollback-stg
 
 ---
 
-## 🔗 Testing
-
-After deployment, port-forward `ops-envoy`:
-
-```bash
-kubectl port-forward svc/ops-envoy 8060:8060 -n ops
-```
-
-, or port-forward `stg-envoy`:
-
-```bash
-kubectl port-forward svc/ops-envoy 8060:8060 -n stg
-```
-
-Then run the test script:
-
-```bash
-./scripts/test.sh
-```
-
----
-
-## 🧾 Notes
+## Notes
 
 - Envoy config is generated from a Helm `ConfigMap`
 - Auth and backend service names are dynamically set per environment via `values-stg.yaml` and `values-ops.yaml`
-- You can extend the Makefile and values files to support additional environments
 
 ---

@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# Go build outputs
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Environment files
+.env
+
+# Docker overrides
+docker-compose.override.yml
+
+# Helm packaging artifacts
+deploy/charts/*.tgz
+deploy/Chart.lock
+
+# Logs
+*.log

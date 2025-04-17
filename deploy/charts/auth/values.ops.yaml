@@ -1,0 +1,4 @@
+service:
+  name: ops-auth-service
+  port: 8080
+  grpcPort: 9191

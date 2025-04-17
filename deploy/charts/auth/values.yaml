@@ -1,0 +1,11 @@
+enabled: true
+
+image:
+  repository: auth
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  name: auth-service
+  port: 8080
+  grpcPort: 9191

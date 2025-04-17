@@ -1,27 +1,8 @@
 auth:
-  image:
-    repository: auth
-    tag: latest
-    pullPolicy: IfNotPresent
-  service:
-    name: auth-service
-    port: 8080
-    grpcPort: 9191
+  enabled: true
 
 backend:
-  image:
-    repository: backend
-    tag: latest
-    pullPolicy: IfNotPresent
-  service:
-    name: backend-service
-    port: 8070
+  enabled: true
 
 envoy:
-  image:
-    repository: envoy
-    tag: latest
-    pullPolicy: IfNotPresent
-  service:
-    name: envoy
-    port: 8060
+  enabled: true

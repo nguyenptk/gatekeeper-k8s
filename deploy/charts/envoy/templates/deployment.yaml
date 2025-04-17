@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.envoy.service.name }}
+  name: {{ .Values.service.name }}
   labels:
-    app: {{ .Values.envoy.service.name }}
+    app: {{ .Values.service.name }}
 spec:
   replicas: 1
   selector:
@@ -16,13 +16,13 @@ spec:
     spec:
       containers:
         - name: envoy
-          image: "{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}"
-          imagePullPolicy: {{ .Values.envoy.image.pullPolicy }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "-c"
             - "/etc/envoy/envoy.yaml"
           ports:
-            - containerPort: {{ .Values.envoy.service.port }}
+            - containerPort: {{ .Values.service.port }}
           volumeMounts:
             - name: envoy-config
               mountPath: /etc/envoy
@@ -30,13 +30,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthcheck
-              port: {{ .Values.envoy.service.port }}
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /healthcheck
-              port: {{ .Values.envoy.service.port }}
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 2
             periodSeconds: 5
 

@@ -1,0 +1,10 @@
+enabled: true
+
+image:
+  repository: backend
+  tag: latest
+  pullPolicy: IfNotPresent
+  
+service:
+  name: backend-service
+  port: 8070

@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.backend.service.name }}
+  name: {{ .Values.service.name }}
   labels:
-    app: {{ .Values.backend.service.name }}
+    app: {{ .Values.service.name }}
 spec:
   replicas: 1
   selector:
@@ -16,24 +16,24 @@ spec:
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.backend.service.port }}
+            - containerPort: {{ .Values.service.port }}
           env:
             - name: APP_NAME
               value: "my-gatekeeper-k8s"
             - name: PORT
-              value: "{{ .Values.backend.service.port }}"
+              value: "{{ .Values.service.port }}"
           livenessProbe:
             httpGet:
               path: /healthcheck
-              port: {{ .Values.backend.service.port }}
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 3
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /healthcheck
-              port: {{ .Values.backend.service.port }}
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 1
             periodSeconds: 5

@@ -1,0 +1,7 @@
+service:
+  name: stg-envoy
+  port: 8060
+
+config:
+  auth_service: stg-auth-service
+  backend_service: stg-backend-service

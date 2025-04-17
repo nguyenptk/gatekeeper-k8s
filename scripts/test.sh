@@ -1,23 +1,27 @@
 #!/bin/bash
 
-echo "Getting JWT..."
+curl http://localhost:8060
+echo
+
+echo "==============================================="
+echo "> Calling /login endpoint to get the JWT Token."
 TOKEN=$(curl -s -X POST http://localhost:8060/login \
   -H "Content-Type: application/json" \
   -d '{"username":"user", "password":"password"}' | jq -r '.token')
 
-echo "Token: $TOKEN"
+echo "JWT Token: $TOKEN"
 echo
 
-echo "====================="
-echo "✅ /public (no token)"
+echo "==================================="
+echo "> Calling /public endpoint (no token)"
 curl -i -X GET http://localhost:8060/public
 echo
 
-echo "====================="
-echo "❌ /private (no token)"
+echo "======================================"
+echo "> Calling /private endpoint (no token)"
 curl -i -X GET http://localhost:8060/private
 echo
 
-echo "========================"
-echo "✅ /private (with token)"
+echo "========================================"
+echo "> Calling /private endpoint (with token)"
 curl -i -X GET http://localhost:8060/private -H "Authorization: Bearer $TOKEN"
