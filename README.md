@@ -4,6 +4,8 @@ A lightweight setup that uses **Envoy as both an API Gateway and Kubernetes Ingr
 
 This project started as a playground for testing service-to-service authentication, and route protection — and then grew into a reusable, multi-environment chart you can install with a single `make` command.
 
+![Architecture](architecture.png)
+
 ---
 
 ## What’s in the box
@@ -11,7 +13,7 @@ This project started as a playground for testing service-to-service authenticati
 - **Envoy** – serves as the Ingress Controller and API gateway, handling routing, load‑balancing, logging, and calling the auth service for token validation (via gRPC)  
 - **Auth (Go)** – REST endpoint for `/login`, gRPC endpoint for Envoy ext_authz, issues JWTs, and `/healthcheck` for probes
 - **Backend (Go)** – public `/public`, protected `/private`, and `/healthcheck` for probes
-- **Helm chart** – one chart for all services, with values for `ops` and `stg` environments
+- **Helm chart** – one chart for all services, with values for `ops` and `stg` environments; Envoy is exposed via Kubernetes **LoadBalancer** (no separate Ingress CRD).
 - **Makefile** – to help typing Helm commands repeatedly
 
 ## Structure
