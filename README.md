@@ -1,6 +1,6 @@
 # gatekeeper-k8s
 
-A lightweight setup that uses **Envoy as a gateway** in front of two small Go services — one for login/auth (with gRPC for Envoy's external authorization) and one for a backend with public/private routes. Everything runs on Kubernetes using Helm.
+A lightweight setup that uses **Envoy as both an API Gateway and Kubernetes Ingress Controller** in front of two small Go services — one for login/auth (with gRPC for Envoy’s external authorization) and one for a backend with public/private routes. Everything runs on Kubernetes using Helm.
 
 This project started as a playground for testing service-to-service authentication, and route protection — and then grew into a reusable, multi-environment chart you can install with a single `make` command.
 
@@ -8,7 +8,7 @@ This project started as a playground for testing service-to-service authenticati
 
 ## What’s in the box
 
-- **Envoy** – handles routing, logging, and calls the auth service for token validation (via gRPC)
+- **Envoy** – serves as the Ingress Controller and API gateway, handling routing, load‑balancing, logging, and calling the auth service for token validation (via gRPC)  
 - **Auth (Go)** – REST endpoint for `/login`, gRPC endpoint for Envoy ext_authz, issues JWTs, and `/healthcheck` for probes
 - **Backend (Go)** – public `/public`, protected `/private`, and `/healthcheck` for probes
 - **Helm chart** – one chart for all services, with values for `ops` and `stg` environments
@@ -108,16 +108,18 @@ make helm-template-stg
 
 ### 6.1. Test the system with `curl`
 
-After deployment, port-forward `ops-envoy` to the `nodePort` to load balance the request from the downstream to all `envoy` pods:
+After deployment, the `LoadBalancer` will route the downstream's requests to all `envoy` pods.
+
+Port-forward `ops-envoy`:
 
 ```bash
-kubectl port-forward deployment/ops-envoy 30080:8060 -n ops
+kubectl port-forward deployment/ops-envoy 8060:8060 -n ops
 ```
 
 or port-forward `stg-envoy`:
 
 ```bash
-kubectl port-forward deployment/stg-envoy 30080:8060 -n stg
+kubectl port-forward deployment/stg-envoy 8060:8060 -n stg
 ```
 
 Then run the test script:
@@ -136,13 +138,13 @@ This script:
 Further, we can collect the Envoy gateway's stats:
 
 ```bash
-kubectl port-forward deployment/ops-envoy 30901:9901 -n ops
+kubectl port-forward deployment/ops-envoy 9901:9901 -n ops
 ```
 
 and call admin's endpoint:
 
 ```bash
-curl http://localhost:30901/stats
+curl http://localhost:9901/stats
 ```
 
 Here are some samples of the stats:

@@ -3,15 +3,13 @@ kind: Service
 metadata:
   name: {{ .Values.service.name }}
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: envoy
   ports:
     - name: http
       port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.port }}
-      nodePort: {{ .Values.service.nodePort }}
     - name: admin
       port: 9901
       targetPort: 9901
-      nodePort: {{ .Values.service.adminNodePort }}

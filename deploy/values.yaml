@@ -29,8 +29,6 @@ envoy:
     name: envoy
     port: 8060
     adminPort: 9901
-    nodePort:      30080    # external port for curl
-    adminNodePort:  30901
   config:
     auth_service: auth-service
     backend_service: backend-service
