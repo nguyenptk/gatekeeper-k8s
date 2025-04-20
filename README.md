@@ -25,8 +25,9 @@ This project started as a playground for testing service-to-service authenticati
 │   │   ├── auth
 │   │   ├── backend
 │   │   ├── envoy
-│   ├── Chart.lock
 │   ├── Chart.yaml
+│   ├── values.ops.yaml
+│   ├── values.stg.yaml
 │   └── values.yaml
 ├── scripts
 │   └── test.sh
