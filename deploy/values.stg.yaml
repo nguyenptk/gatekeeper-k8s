@@ -1,15 +1,57 @@
 auth:
+  enabled: true
   service:
     name: stg-auth-service
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
 
 backend:
+  enabled: true
   service:
     name: stg-backend-service
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+  replicaCount: 3
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
 
 envoy:
+  enabled: true
   service:
     name: stg-envoy
   config:
     auth_service: stg-auth-service
     backend_service: stg-backend-service
-  welcomeMessage: "Welcome to stg-gatekeeper-k8s environment!"
+  welcomeMessage: "Welcome to stg environment!"
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60

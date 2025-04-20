@@ -5,17 +5,21 @@ metadata:
   labels:
     app: {{ .Values.service.name }}
 spec:
-  replicas: 2
+  replicas: {{ if .Values.autoscaling.enabled }}
+     {{ .Values.autoscaling.minReplicas }}
+   {{ else }}
+     {{ .Values.replicaCount | default 2 }}
+   {{ end }}
   selector:
     matchLabels:
-      app: envoy
+      app: {{ .Values.service.name }}
   template:
     metadata:
       labels:
-        app: envoy
+        app: {{ .Values.service.name }}
     spec:
       containers:
-        - name: envoy
+        - name: {{ .Values.service.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
@@ -24,7 +28,7 @@ spec:
           ports:
             - containerPort: {{ .Values.service.port }}
           volumeMounts:
-            - name: envoy-config
+            - name: {{ .Values.service.name }}-config
               mountPath: /etc/envoy
               readOnly: true
           livenessProbe:
@@ -39,9 +43,16 @@ spec:
               port: {{ .Values.service.port }}
             initialDelaySeconds: 2
             periodSeconds: 5
+          resources:
+            requests:
+              cpu:    {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu:    {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
 
       volumes:
-        - name: envoy-config
+        - name: {{ .Values.service.name }}-config
           configMap:
-            name: envoy-config
+            name: {{ .Values.service.name }}-config
             

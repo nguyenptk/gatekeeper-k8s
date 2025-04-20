@@ -5,17 +5,21 @@ metadata:
   labels:
     app: {{ .Values.service.name }}
 spec:
-  replicas: 3
+  replicas: {{ if .Values.autoscaling.enabled }}
+     {{ .Values.autoscaling.minReplicas }}
+   {{ else }}
+     {{ .Values.replicaCount | default 2 }}
+   {{ end }}
   selector:
     matchLabels:
-      app: backend
+      app: {{ .Values.service.name }}
   template:
     metadata:
       labels:
-        app: backend
+        app: {{ .Values.service.name }}
     spec:
       containers:
-        - name: backend
+        - name: {{ .Values.service.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -37,3 +41,10 @@ spec:
               port: {{ .Values.service.port }}
             initialDelaySeconds: 1
             periodSeconds: 5
+          resources:
+            requests:
+              cpu:    {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu:    {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}

@@ -127,7 +127,7 @@ kubectl port-forward deployment/stg-envoy 8060:8060 -n stg
 Then run the test script:
 
 ```bash
-./scripts/test.sh
+./scripts/test.sh functional
 ```
 
 This script:
@@ -156,7 +156,31 @@ cluster.backend_service.upstream_rq_200: 10
 cluster.auth_ext.internal.upstream_rq_time: P0(nan,0) P25(nan,0) P50(nan,0) P75(nan,0) P90(nan,0) P95(nan,1.05) P99(nan,1.09) P99.5(nan,1.095) P99.9(nan,1.099) P100(nan,1.1)
 ```
 
-### 6.2. Smoke Tests
+### 6.2. Performance Test to trigger the HPA
+
+Once we have verified the basic functionality, you we stress the system to prove autoscaling. This test will generate a flood of requests against the `/public` endpoint, driving CPU utilization above the HPA threshold (`ops` environment) and causing your Backend and Envoy pods to scale out automatically.
+
+**How it works**  
+- We fire off a configurable number of concurrent `curl` requests (`PERF_REQUESTS`) with a fixed parallelism (`PERF_CONCURRENCY`) for a duration (`PERF_DURATION`).  
+- Each request hits `/public`, which does minimal work but still consumes CPU.  
+- The HorizontalPodAutoscaler watches the CPU usage (via metrics-server) and will spin up new replicas once average utilization exceeds the configured target.
+
+**Usage**
+
+- Enable metrics-server in Minikube:
+
+```bash
+minikube addons enable metrics-server
+kubectl get deploy metrics-server -n kube-system
+```
+
+- Run only the performance test:
+
+``` bash
+./scripts/test.sh perf
+```
+
+### 6.3. Smoke Tests
 
 Quick “on/off” tests to verify each sub‑chart’s `enabled` flag works as expected.
 

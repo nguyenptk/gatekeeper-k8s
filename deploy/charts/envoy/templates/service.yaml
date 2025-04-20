@@ -5,7 +5,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: envoy
+    app: {{ .Values.service.name }}
   ports:
     - name: http
       port: {{ .Values.service.port }}

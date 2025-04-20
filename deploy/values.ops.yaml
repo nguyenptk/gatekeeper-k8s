@@ -1,15 +1,57 @@
 auth:
+  enabled: true
   service:
     name: ops-auth-service
+  resources:
+    requests:
+      cpu: 2m
+      memory: 8Mi
+    limits:
+      cpu: 4m
+      memory: 16Mi
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
 
 backend:
+  enabled: true
   service:
     name: ops-backend-service
+  resources:
+    requests:
+      cpu: 2m # small number to help trigger HPA for the perf test
+      memory: 8Mi
+    limits:
+      cpu: 4m
+      memory: 16Mi
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
 
 envoy:
+  enabled: true
   service:
     name: ops-envoy
   config:
     auth_service: ops-auth-service
     backend_service: ops-backend-service
-  welcomeMessage: "Welcome to ops‑gatekeeper‑k8s environment!"
+  welcomeMessage: "Welcome to ops-gatekeeper-k8s environment!"
+  resources:
+    requests:
+      cpu: 8m
+      memory: 32Mi
+    limits:
+      cpu: 16m
+      memory: 64Mi
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
